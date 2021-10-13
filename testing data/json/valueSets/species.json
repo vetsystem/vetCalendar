@@ -1,0 +1,23 @@
+{
+    "resourceType" : "ValueSet",
+    "id" : "animal-breeds",
+    "version" : "0.0.1",
+    "name" : "AnimalSpecies",
+    "title" : "Animal species",
+    "status" : "draft",
+    "description" : "This example value set defines a set of codes that can be used to indicate species of animals.",
+    "compose" : {
+      "include" : [{
+        "system" : "http://snomed.info/sct",
+        "concept" : [{
+          "code" : "448771007",
+          "display" : "pes"
+        },
+        {
+          "code" : "448169003",
+          "display" : "kočka"
+        }]
+        }]
+      }
+    }
+  
