@@ -1,0 +1,12 @@
+version: "3"
+services:
+  test-data:
+    build: .
+    #depends_on:
+     # - hapi
+    container_name: test-data
+  hapi:
+    image: hapiproject/hapi:latest
+    ports:
+      - "8080:8080" 
+    container_name: hapi 
