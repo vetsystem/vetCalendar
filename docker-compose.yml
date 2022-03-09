@@ -1,7 +1,7 @@
 version: "3"
 services:
   test-data:
-    build: .
+    build: ./testData
     #depends_on:
      # - hapi
     container_name: test-data
