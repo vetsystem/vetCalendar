@@ -1,2 +1,26 @@
+# React generated gitignore
+
+# dependencies
+vet-cal/node_modules
+vet-cal/.pnp
+.pnp.js
+
+# testing
+vet-cal/coverage
+
+# production
+vet.cal/build
+
+# misc
+.DS_Store
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
 # Files that are unused in the project yet
 /icons
