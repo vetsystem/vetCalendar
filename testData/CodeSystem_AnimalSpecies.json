@@ -1,0 +1,20 @@
+{
+    "resourceType": "CodeSystem",
+    "status": "active",
+    "content": "complete",
+    "url": "http://fhir.test.com/CodeSystem/AnimalSpecies",
+    "concept": [
+      {
+        "code": "ca",
+        "display": "pes"
+      },
+      {
+        "code": "fe",
+        "display": "kočka"
+      },
+      {
+        "code": "un",
+        "display": "nespecifikován"
+      }
+    ]
+  }

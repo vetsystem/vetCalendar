@@ -1,0 +1,12 @@
+{
+    "resourceType": "ValueSet",
+    "status": "draft",
+    "url": "http://fhir.test.com/ValueSet/AnimalSpecies",
+    "compose": {
+      "include": [
+        {
+          "system": "http://fhir.test.com/CodeSystem/AnimalSpecies"
+        }
+      ]
+    }
+  }

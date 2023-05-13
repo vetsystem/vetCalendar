@@ -3,10 +3,12 @@ services:
   test-data:
     build: ./testData
     #depends_on:
-     # - hapi
+    # - hapi
     container_name: test-data
   hapi:
     image: hapiproject/hapi:latest
     ports:
-      - "8080:8080" 
-    container_name: hapi 
+      - "8080:8080"
+    environment:
+      - hapi.fhir.fhir_version=R5
+    container_name: hapi
