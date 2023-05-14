@@ -36,7 +36,7 @@ export default function ShiftTable() {
   const [weekends, setWeekends] = React.useState([]);
   const { isLoading: doctorLoading } = useGetDoctorsQuery();
   const { isLoading: shiftLoading } = useGetShiftsQuery();
-  const { data: roomsData, isLoading: roomLoading } = useGetRoomsQuery();
+  const { isLoading: roomLoading } = useGetRoomsQuery();
   const doctors = useSelector(selectAllDoctos);
   const rooms = useSelector(selectAllRoomEnts);
   const { data: shiftsForMonth } = useGetShiftsForMonthQuery({
@@ -58,7 +58,9 @@ export default function ShiftTable() {
         width: 48,
         minWidth: 48,
         sortable: false,
-        renderCell: RenderShiftAvatar,
+        renderCell: function (params) {
+          return <RenderShiftAvatar {...params} />;
+        },
         cellClassName: undefined,
         headerClassName: undefined,
         valueGetter: (params) => {

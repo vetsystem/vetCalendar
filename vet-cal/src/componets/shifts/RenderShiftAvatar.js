@@ -8,9 +8,7 @@ export default function RenderShiftAvatar(props) {
   const [deleteShift] = useDeleteShiftMutation();
 
   const onDeleteShift = () => {
-    deleteShift(props.row[props.field].shiftId).catch((error) => {
-      console.log(error);
-    });
+    deleteShift(props.row[props.field].shiftId).catch((error) => {});
   };
   const nightShift = () => {
     if (!props.value) return false;

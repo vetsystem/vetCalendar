@@ -14,6 +14,7 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
     getAppointments: builder.query({
       query: () => "/Appointment?_count=100",
       transformResponse: (responseData) => {
+        if (!responseData.entry) return appAdapter.setAll(initialState, []);
         const apiApps = responseData.entry.map((entry) => {
           const room = entry.resource.participant.filter(
             (participant) => participant.actor.type === "Location"
