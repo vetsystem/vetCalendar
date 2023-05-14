@@ -58,7 +58,9 @@ export default function ShiftTable() {
         width: 48,
         minWidth: 48,
         sortable: false,
-        renderCell: RenderShiftAvatar,
+        renderCell: function (params) {
+          return <RenderShiftAvatar {...params} />;
+        },
         cellClassName: undefined,
         headerClassName: undefined,
         valueGetter: (params) => {
