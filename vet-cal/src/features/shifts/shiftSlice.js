@@ -6,10 +6,6 @@ import {
   getResources,
 } from "../../utils/fhir/fhirUtil";
 
-/**
- * Create application reasons adapter for normalizing fetch api data from FHIR
- * server - not needed yet TODO
- */
 const shiftAdapter = createEntityAdapter({
   selectId: (shift) => shift.id,
 });

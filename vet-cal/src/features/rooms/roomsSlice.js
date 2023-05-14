@@ -2,8 +2,6 @@ import { createEntityAdapter, createSelector } from "@reduxjs/toolkit";
 
 import { apiSlice } from "../../api/fhirApi";
 
-const ORGANIZATION_ID = process.env.REACT_APP_ORGANIZATION_ID;
-
 const roomsAdapter = createEntityAdapter();
 const initialState = roomsAdapter.getInitialState();
 
