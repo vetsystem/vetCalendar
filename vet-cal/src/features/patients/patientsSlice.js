@@ -14,6 +14,8 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
     getPatients: builder.query({
       query: () => "/Patient",
       transformResponse: (responseData) => {
+        if (!responseData.entry)
+          return patientsAdapter.setAll(initialState, []);
         const apiPatients = responseData.entry
           .filter(({ resource }) => {
             return (
