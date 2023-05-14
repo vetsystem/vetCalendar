@@ -26,11 +26,17 @@ export default function AppReasonInput({ onChange }) {
   React.useEffect(() => {
     const appReason =
       value.label === "" || value.label !== inputValue
-        ? { label: inputValue, roomSelection: [], doctorSelection: [] }
+        ? {
+            label: inputValue,
+            roomSelection: [],
+            doctorSelection: [],
+            duration: 0,
+          }
         : {
             label: value.label,
             roomSelection: value.room,
             doctorSelection: value.doctor,
+            duration: value.duration,
           };
     onChange((prevState) => {
       const newState = {
@@ -38,6 +44,7 @@ export default function AppReasonInput({ onChange }) {
         appReason: appReason.label,
         roomSelection: appReason.roomSelection,
         doctorSelection: appReason.doctorSelection,
+        duration: appReason.duration,
       };
       return newState;
     });
