@@ -19,7 +19,8 @@
       },
       "request": {
         "method": "POST",
-        "url": "Practitioner"
+        "url": "Practitioner",
+        "ifNoneExist": "/Practitioner?family=Novotn%C3%BD&given=Jan"
       }
     },
     {
@@ -38,7 +39,8 @@
       },
       "request": {
         "method": "POST",
-        "url": "Practitioner"
+        "url": "Practitioner",
+        "ifNoneExist": "/Practitioner?family=Pozorn%C3%A1&given=Marie"
       }
     },
     {
@@ -46,14 +48,12 @@
       "resource": {
         "resourceType": "Location",
         "id": "cfsb1622387859800",
-        "name": "Ordinace",
-        "managingOrganization": {
-          "reference": "Organization/cfsb0000000"
-        }
+        "name": "Ordinace"
       },
       "request": {
         "method": "POST",
-        "url": "Location"
+        "url": "Location",
+        "ifNoneExist": "/Location?name=Ordinace"
       }
     },
     {
@@ -61,26 +61,12 @@
       "resource": {
         "resourceType": "Location",
         "id": "cfsb1620989224498",
-        "name": "Operační sál",
-        "managingOrganization": {
-          "reference": "Organization/cfsb0000000"
-        }
+        "name": "Operační sál"
       },
       "request": {
         "method": "POST",
-        "url": "Location"
-      }
-    },
-    {
-      "fullUrl": "http://clinfhir.com/fhir/Organization/cfsb0000000",
-      "resource": {
-        "resourceType": "Organization",
-        "id": "cfsb0000000",
-        "name": "Veterinární klinika"
-      },
-      "request": {
-        "method": "POST",
-        "url": "Organization"
+        "url": "Location",
+        "ifNoneExist": "/Location?name=Opera%C4%8Dn%C3%AD%20s%C3%A1l"
       }
     }
   ]

@@ -9,7 +9,7 @@ vet-cal/.pnp
 vet-cal/coverage
 
 # production
-vet.cal/build
+vet-cal/build
 
 # misc
 .DS_Store

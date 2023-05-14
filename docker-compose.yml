@@ -1,14 +1,25 @@
-version: "3"
+version: "3.8"
 services:
   test-data:
     build: ./testData
-    #depends_on:
-    # - hapi
     container_name: test-data
+    depends_on:
+      - hapi
   hapi:
     image: hapiproject/hapi:latest
     ports:
       - "8080:8080"
     environment:
-      - hapi.fhir.fhir_version=R5
+      hapi.fhir.fhir_version: R5
+      tester.home.fhir_version: R5
+      tester.global.fhir_version: R5
+      tester.global.server_address: "http://hapi.fhir.org/baseR5"
     container_name: hapi
+  vetcal:
+    build: ./vet-cal
+    ports:
+      - "3000:80"
+    container_name: vet-cal
+    depends_on:
+      - hapi
+      - test-data

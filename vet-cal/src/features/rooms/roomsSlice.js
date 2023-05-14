@@ -10,7 +10,7 @@ const initialState = roomsAdapter.getInitialState();
 export const extendedApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
     getRooms: builder.query({
-      query: () => `/Location?organization=${ORGANIZATION_ID}`,
+      query: () => `/Location`,
       transformResponse: (responseData) => {
         const apiRooms = responseData.entry
           .map((entry) => {
