@@ -104,16 +104,17 @@ export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
         );
         searchUrl.searchParams.set("name", patient.name);
         searchUrl.searchParams.set("birthdate", patient.birthDate);
+        patient.id = `urn:uuid:${uuidv4()}`;
         const transactionResource = {
-          fullUrl: `urn:uuid:${uuidv4()}`,
+          fullUrl: patient.id,
           resource: patientResource,
           method: "PUT",
           url: `${searchUrl.pathname}${searchUrl.search}`,
         };
         bundleEntries.push(transactionResource);
+        console.log(patient);
       }
       if (slots.length > 0) {
-        console.log(slots);
         const transactionSlots = slots.map((slot) => ({
           fullUrl: slot.fullUrl,
           resource: { ...slot.resource, status: "busy-unavailable" },
@@ -145,9 +146,9 @@ export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
         resourceType: "Bundle",
         entries: bundleEntries,
       });
+      console.log(bundleTransaction);
       await addApp(bundleTransaction)
         .then(({ data }) => {
-          console.log(data);
           return data.entry.filter(
             (entry) => entry.response.status === "201 Created"
           );

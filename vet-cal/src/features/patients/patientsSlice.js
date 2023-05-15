@@ -33,7 +33,9 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
                 resource.extension[0].extension[0].valueCodeableConcept
                   .coding[0],
               owner: resource.contact[0].name.text,
-              contact: resource.contact[0].telecom[0].value,
+              contact: resource.contact[0].telecom
+                ? resource.contact[0].telecom[0].value
+                : "",
             };
             return patient;
           });
