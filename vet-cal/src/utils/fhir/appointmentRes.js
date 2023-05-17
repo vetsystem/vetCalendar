@@ -2,7 +2,6 @@ import { addMinutes, formatISO } from "date-fns";
 import { createActor } from "./fhirUtil";
 
 function appointmentRes({
-  slots,
   appReason,
   startDate,
   endDate,
@@ -23,18 +22,7 @@ function appointmentRes({
     room,
   ]);
   const appWithSubject = addSubject(appWithParticipants, patient);
-  const appWithSlot = addSlots(appWithSubject, slots);
-  return appWithSlot;
-}
-
-function addSlots(appRes, slots) {
-  const slotsRef = slots.map((slot) =>
-    slot?.resource.id
-      ? { reference: `Slot/${slot.resource.id}`, type: "Slot" }
-      : null
-  );
-  const appWithSlots = { ...appRes, slot: slotsRef };
-  return appWithSlots;
+  return appWithSubject;
 }
 
 function addSubject(appRes, patient) {

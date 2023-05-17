@@ -17,7 +17,7 @@ import { speciesOptions } from "../../utils/globals";
 import { ageOptions } from "../../utils/globals";
 
 const PatientDatailForm = forwardRef(({ onChange }, ref) => {
-  const { isLoading } = useGetPatientsQuery();
+  const { isLoading, refetch } = useGetPatientsQuery();
   const patients = useSelector(selectAllPatients);
   const initPatient = {
     id: "",
@@ -38,6 +38,9 @@ const PatientDatailForm = forwardRef(({ onChange }, ref) => {
     return {
       getPatientData() {
         return patient;
+      },
+      refetchPatients() {
+        refetch();
       },
     };
   });

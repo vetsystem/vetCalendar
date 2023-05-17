@@ -15,23 +15,19 @@ import { v4 as uuidv4 } from "uuid";
 import AppDetailForm from "./AppDetailForm";
 import PatientDatailForm from "../../../features/patients/PatientDetailForm";
 import {
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-} from "@mui/material";
-import { formatISO } from "date-fns";
-import { createFhirResource } from "../../../utils/fhir/fhirUtil";
+  createBundle,
+  createBundleEntry,
+  createFhirResource,
+} from "../../../utils/fhir/fhirUtil";
 import { useAddAppMutation } from "../../../features/appointments/appointmentsSlice";
 
 export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
   // Variables for handling appointment data
   const appointmentRef = React.useRef(null);
+  const [addApp, { data: res, isLoading, isError, isSuccess }] =
+    useAddAppMutation();
   // Variables for handling pacient data
   const patientRef = React.useRef(null);
-  // Varibles for handling appointment data
-  const [addApp, { isLoading }] = useAddAppMutation();
   // Variables for handling data for alert tooltip
   const [alertMsg, setAlertMsg] = React.useState("");
   const [openAlert, setOpenAlert] = React.useState(false);
@@ -42,124 +38,111 @@ export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
     setOpenAlert(!openAlert);
   };
   /**
-   * Variables for handling dialog with question about creating new appointment
-   * without scheduled slots
+   * Hook for handling result of adding new appointment
    */
-  const [openDialog, setOpenDialog] = React.useState(false);
-  const [submitData, setSubmitData] = React.useState(true);
+  React.useEffect(() => {
+    if (isSuccess) {
+      if (
+        res.entry.filter((entry) => entry.response.location.includes("Patient"))
+          .length > 0
+      ) {
+        patientRef.current.refetchPatients();
+      }
+      onClose();
+    } else if (isError) {
+      setAlertMsg("Návštěvu se nepodařilo uložit");
+      toogleAlert();
+    }
+  }, [isSuccess, isError]);
   /**
-   * Function for showing and hiding dialog with question about creating new
-   * appointment without scheduled slots
+   * Function for checking if form contains all required data
+   * @param {Object} data Object with data about appointment
+   * @returns {boolean} True if form is valid, false otherwise
    */
-  const handleCloseDialog = () => {
-    setOpenDialog(false);
-  };
-
-  const interuptSubmit = () => {
-    setSubmitData(false);
-    handleCloseDialog();
-  };
-
-  const onAppSubmit = async () => {
-    const appData = appointmentRef.current.getAppData();
-    const patient = patientRef.current.getPatientData();
-
+  const isFormValid = (data) => {
     if (
-      appData.startDate === null ||
-      appData.room.id === "" ||
-      appData.duration === 0
+      data.startDate === null ||
+      data.room.id === "" ||
+      data.duration === 0 ||
+      !data.duration
     ) {
       setAlertMsg("Je nutné vyplnit datum, místnost a dobu trvání");
       toogleAlert();
-      return;
+      return false;
+    } else return true;
+  };
+  /**
+   * Function for checking if patient exists and if should be created
+   * @param {Object} patient Object with patient data
+   * @returns {boolean} True if patient exists, false otherwise
+   */
+  const patientExists = (patient) => {
+    return !(!patient.id && patient.owner !== "");
+  };
+  /**
+   * Function for creatinf bundle entry with patient resource
+   * @param {Object} patient Object with patient data
+   * @returns {Object} Bundle entry for patient
+   */
+  const createPatientBundleEntry = (patient) => {
+    const patientResource = createFhirResource({
+      ...patient,
+      resourceType: "Patient",
+    });
+    patient.id = `urn:uuid:${uuidv4()}`;
+    const url = `/Patient?name=${encodeURI(patient.name)}&birthdate=${
+      patient.birthDate
+    }`;
+    return createBundleEntry({
+      resource: patientResource,
+      method: "PUT",
+      fullUrl: patient.id,
+      url: url,
+    });
+  };
+  /**
+   * Function for creating bundle entry with appointment resource
+   * @param {Object} appData Object with appointment data
+   * @param {Object} patient Object with patient data
+   */
+  const createAppointmenBundleEntry = (appData, patient) => {
+    const appointment = createFhirResource({
+      resourceType: "Appointment",
+      ...appData,
+      room: { ...appData.room, type: "Location" },
+      doctor: { ...appData.doctor, type: "Practitioner" },
+      patient: { ...patient, type: "Patient" },
+    });
+    return createBundleEntry({
+      resource: appointment,
+      method: "POST",
+      fullUrl: `urn:uuid:${uuidv4()}`,
+      url: "/Appointment",
+    });
+  };
+  /**
+   * Function for creating bundle with appointment and patient resources
+   * @param {Object} appData Object with appointment data
+   * @param {Object} patient Object with patient data
+   * @returns {Object} Bundle with appointment and patient resources
+   */
+  const createAppBundle = (appData, patient) => {
+    const bundleEntries = [];
+    if (!patientExists(patient)) {
+      bundleEntries.push(createPatientBundleEntry(patient));
     }
-
-    const slots = await fetch(
-      `${
-        process.env.REACT_APP_FHIR_LOCAL_SERVER_URL
-      }/Slot?schedule.actor:Location=${appData.room.id}&start=ge${formatISO(
-        appData.startDate
-      )}&start=lt${formatISO(appData?.endDate)}&status=free`
-    )
-      .then((response) => response.json())
-      .then((data) => {
-        if (!data.entry) {
-          return [];
-        } else {
-          return data.entry;
-        }
-      });
-
-    if (slots.length === 0) setOpenDialog(true);
-    if (submitData) {
-      const bundleEntries = [];
-      if (!patient.id && patient.owner !== "") {
-        const patientResource = createFhirResource({
-          ...patient,
-          resourceType: "Patient",
-        });
-        const searchUrl = new URL(
-          "/Patient",
-          process.env.REACT_APP_FHIR_LOCAL_SERVER_URL
-        );
-        searchUrl.searchParams.set("name", patient.name);
-        searchUrl.searchParams.set("birthdate", patient.birthDate);
-        patient.id = `urn:uuid:${uuidv4()}`;
-        const transactionResource = {
-          fullUrl: patient.id,
-          resource: patientResource,
-          method: "PUT",
-          url: `${searchUrl.pathname}${searchUrl.search}`,
-        };
-        bundleEntries.push(transactionResource);
-      }
-      if (slots.length > 0) {
-        const transactionSlots = slots.map((slot) => ({
-          fullUrl: slot.fullUrl,
-          resource: { ...slot.resource, status: "busy-unavailable" },
-          method: "PUT",
-          url: `/Slot/${slot.resource.id}`,
-        }));
-        bundleEntries.push(...transactionSlots);
-      }
-
-      const appointment = createFhirResource({
-        resourceType: "Appointment",
-        ...appData,
-        slots,
-        room: { ...appData.room, type: "Location" },
-        doctor: { ...appData.doctor, type: "Practitioner" },
-        patient: { ...patient, type: "Patient" },
-      });
-
-      const transactionAppointment = {
-        fullUrl: `urn:uuid:${uuidv4()}`,
-        resource: appointment,
-        method: "POST",
-        url: `/Appointment`,
-      };
-
-      bundleEntries.push(transactionAppointment);
-
-      const bundleTransaction = createFhirResource({
-        resourceType: "Bundle",
-        entries: bundleEntries,
-      });
-      await addApp(bundleTransaction)
-        .then(({ data }) => {
-          return data.entry.filter(
-            (entry) => entry.response.status === "201 Created"
-          );
-        })
-        .then((data) => {
-          if (data.length > 0) {
-            onClose();
-          } else {
-            setAlertMsg("Návštěvu se nepodařilo uložit");
-            toogleAlert();
-          }
-        });
-    }
+    bundleEntries.push(createAppointmenBundleEntry(appData, patient));
+    return createBundle(bundleEntries);
+  };
+  /**
+   * Function for handling submit of appointment form
+   */
+  const onAppSubmit = () => {
+    const appData = appointmentRef.current.getAppData();
+    const patient = patientRef.current.getPatientData();
+    if (!isFormValid(appData)) return;
+    const bundle = createAppBundle(appData, patient);
+    addApp(bundle);
   };
 
   return (
@@ -214,21 +197,6 @@ export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
           </LoadingButton>
         </Stack>
       </Stack>
-      <Dialog open={openDialog} onClose={interuptSubmit}>
-        <DialogTitle>{"Neexistující služba"}</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Pro dané parametry neexistuje vypsaná služba nebo ve ve vypsaných
-            službách není volné místo. Mám i přesto vytvořit novou návštěvu?
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={interuptSubmit}>Ne</Button>
-          <Button onClick={handleCloseDialog} autoFocus>
-            Ano
-          </Button>
-        </DialogActions>
-      </Dialog>
     </>
   );
 }
