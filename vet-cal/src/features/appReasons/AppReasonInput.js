@@ -39,7 +39,7 @@ export default function AppReasonInput({ onChange }) {
             label: value.label,
             roomSelection: value.room,
             doctorSelection: value.doctor,
-            duration: value.duration,
+            ...(value.duration && { duration: value.duration }),
           };
     onChange((prevState) => {
       const newState = {
@@ -47,7 +47,7 @@ export default function AppReasonInput({ onChange }) {
         appReason: appReason.label,
         roomSelection: appReason.roomSelection,
         doctorSelection: appReason.doctorSelection,
-        duration: appReason.duration,
+        ...(appReason.duration && { duration: appReason.duration }),
       };
       return newState;
     });
