@@ -70,13 +70,14 @@ const createBundle = (entries) => {
   return { resourceType: "Bundle", type: "transaction", entry: entries };
 };
 
-const createBundleEntry = ({ resource, method, fullUrl, url }) => {
+const createBundleEntry = ({ resource, method, fullUrl, url, ifNoneExist }) => {
   const bundleEntry = {
     fullUrl: fullUrl,
     resource: resource,
     request: {
       method: method,
       url: url,
+      ...(ifNoneExist && { ifNoneExist: ifNoneExist }),
     },
   };
   return bundleEntry;
@@ -102,7 +103,17 @@ const createActors = (actors) => {
 function createActor(actor) {
   return { reference: actor.id, type: actor.type, display: actor.display };
 }
+
+function createTypedReference(type, reference) {
+  return {
+    typeReference: {
+      reference: reference,
+    },
+    type: type,
+  };
+}
 export {
+  createTypedReference,
   createFhirResource,
   createActor,
   getDeleteAppBundle,

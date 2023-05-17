@@ -7,85 +7,111 @@ import DialogActions from "@mui/material/DialogActions";
 import Button from "@mui/material/Button";
 import Stack from "@mui/material/Stack";
 import TextField from "@mui/material/TextField";
+import IconButton from "@mui/material/IconButton";
+import Snackbar from "@mui/material/Snackbar";
+import CloseIcon from "@mui/icons-material/Close";
+import Alert from "@mui/material/Alert";
+import LoadingButton from "@mui/lab/LoadingButton";
+import SaveIcon from "@mui/icons-material/Save";
+
 import DurationInput from "../../componets/inputs/DurationInput";
 import RoomInput from "../rooms/RoomInput";
 import DoctorInput from "../doctors/DoctorInput";
+
+import { v4 as uuidv4 } from "uuid";
+
 import { useAddAppReasonMutation } from "./appReasonsSlice";
-import { useDispatch } from "react-redux";
-import { addCurrAppReason } from "../currApp/currAppSlice";
+import ActivityDefinitionRes from "../../utils/fhir/activityDefinitionRes";
+import { createBundle, createBundleEntry } from "../../utils/fhir/fhirUtil";
 
-export default function AppReasonDialog({ newAppReason, open, handleClose }) {
-  const dispatch = useDispatch();
-  const [addAppReason, result] = useAddAppReasonMutation();
-
-  // Set new appointment reason value into dialog
+export default function AppReasonDialog({
+  newAppReason,
+  onAppReasonSave,
+  open,
+  handleClose,
+}) {
+  // Initial value of dialog input fields for new appointment reason
   const initDialogValue = {
     label: "",
-    room: [],
-    doctor: [],
+    rooms: [],
+    doctors: [],
     duration: 0,
   };
+  // Setting state of dialog input fields for new appointment reason
   const [dialogValue, setDialogValue] = React.useState(initDialogValue);
-
-  useEffect(() => {
-    setDialogValue((prevState) => ({ ...prevState, label: newAppReason }));
-  }, [newAppReason]);
-
-  const createResource = (dialogValue) => {
-    let rooms = [];
-    let doctors = [];
-    if (dialogValue.room.length !== 0) {
-      rooms = dialogValue.room.map((room) => {
-        return {
-          typeReference: {
-            reference: room,
-          },
-          type: "location",
-        };
-      });
-    }
-    if (dialogValue.doctor.length !== 0) {
-      doctors = dialogValue.doctor.map((doctor) => {
-        return {
-          typeReference: {
-            reference: doctor,
-          },
-          type: "practitioner",
-        };
-      });
-    }
-    const participants = rooms.concat(doctors);
-    const resource = {
-      resourceType: "ActivityDefinition",
-      name: dialogValue.label,
-      timingDuration: {
-        value: dialogValue.duration,
-        unit: "min",
-      },
-    };
-    if (participants.length !== 0) resource.participant = participants;
-    return resource;
+  // Trigger for adding new appointment reason
+  const [addAppReason, result] = useAddAppReasonMutation();
+  const [errorText, setErrorText] = React.useState("");
+  const [openAlert, setOpenAlert] = React.useState(false);
+  /**
+   * Function for showing and hiding alert tooltip
+   */
+  const toogleAlert = () => {
+    setOpenAlert(!openAlert);
   };
+  // use new appointment reason label from appointment reason input field in add
+  // appointment form
+  useEffect(() => {
+    setDialogValue({ ...dialogValue, label: newAppReason });
+  }, [newAppReason]);
+  useEffect(() => {
+    if (result.isError) {
+      setErrorText("Důvod návštěvy se nepodařilo uložit!");
+      toogleAlert();
+    }
+  }, [result.isError]);
+  useEffect(() => {
+    if (result.data === "200 OK") {
+      setErrorText("Důvod návštěvy s tímto názvem už existuje!");
+      toogleAlert();
+    } else if (result.isSuccess) {
+      onAppReasonSave({
+        label: dialogValue.label,
+        room: dialogValue.rooms,
+        doctor: dialogValue.doctors,
+        duration: dialogValue.duration,
+      });
+      onClose();
+    }
+  }, [result.isSuccess]);
 
-  const handleCloseDialog = () => {
+  const onClose = () => {
     handleClose(false);
     setDialogValue(initDialogValue);
   };
 
-  const handleSubmit = async (event) => {
-    event.preventDefault();
+  const onSubmit = (event) => {
     if (!isAppReasonEmpty()) {
-      await addAppReason({ resource: createResource(dialogValue) });
-      dispatch(addCurrAppReason(dialogValue));
-      if (!result.isError) handleCloseDialog();
-      else {
-        console.log(result.error);
-      }
+      saveAppReason();
     }
   };
 
+  const saveAppReason = () => {
+    const resource = ActivityDefinitionRes(
+      dialogValue.label,
+      dialogValue.duration,
+      {
+        doctors: dialogValue.doctors,
+        rooms: dialogValue.rooms,
+      }
+    );
+    const bundleEntry = createBundleEntry({
+      resource: resource,
+      method: "POST",
+      fullUrl: `urn:uuid:${uuidv4()}`,
+      url: "/ActivityDefinition",
+      ifNoneExist: `ActivityDefinition?name=${encodeURI(dialogValue.label)}`,
+    });
+    const bundle = createBundle([bundleEntry]);
+    addAppReason(bundle);
+  };
+
   const isAppReasonEmpty = () => {
-    return !dialogValue.label || dialogValue.label === "";
+    return dialogValue.label === "";
+  };
+
+  const setLabel = (event) => {
+    setDialogValue({ ...dialogValue, label: event.target.value });
   };
 
   function onChangeFn(type) {
@@ -102,7 +128,26 @@ export default function AppReasonDialog({ newAppReason, open, handleClose }) {
   };
 
   return (
-    <Dialog open={open} onClose={handleCloseDialog} fullWidth maxWidth={"lg"}>
+    <Dialog open={open} onClose={onClose} fullWidth maxWidth={"lg"}>
+      {/* Error msg */}
+      <Snackbar
+        open={openAlert}
+        autoHideDuration={6000}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+        onClose={toogleAlert}
+      >
+        <Alert
+          severity="error"
+          variant="filled"
+          action={
+            <IconButton size="small" onClick={toogleAlert}>
+              <CloseIcon fontSize="small" />
+            </IconButton>
+          }
+        >
+          {errorText}
+        </Alert>
+      </Snackbar>
       <DialogTitle>Nový důvod návštěvy</DialogTitle>
       <DialogContent>
         <Stack>
@@ -112,25 +157,31 @@ export default function AppReasonDialog({ newAppReason, open, handleClose }) {
             id="appReasonInput"
             name="appReason"
             value={dialogValue.label}
-            onChange={(event) => {
-              setDialogValue({ ...dialogValue, label: event.target.value });
-            }}
+            onChange={setLabel}
             label="Důvod návštěvy"
             type="text"
             variant="standard"
-            error={isAppReasonEmpty() || result.isError}
-            {...(isAppReasonEmpty() || result.isError
-              ? { helperText: "Důvod návštěvy musí být vyplněn!" }
+            error={dialogValue.label === ""}
+            {...(dialogValue.label === ""
+              ? { helperText: "Důvod návštěvy musí být vyplněn" }
               : {})}
           />
-          <RoomInput multiple={true} onChangeFn={onChangeFn("room")} />
-          <DoctorInput multiple={true} onChangeFn={onChangeFn("doctor")} />
+          <RoomInput multiple={true} onChangeFn={onChangeFn("rooms")} />
+          <DoctorInput multiple={true} onChangeFn={onChangeFn("doctors")} />
           <DurationInput onChangeFn={setDuration} />
         </Stack>
       </DialogContent>
       <DialogActions>
-        <Button onClick={handleClose}>Zavřít</Button>
-        <Button onClick={handleSubmit}>Přidat</Button>
+        <Button onClick={onClose}>Zavřít</Button>
+        <LoadingButton
+          variant="contained"
+          onClick={onSubmit}
+          loadingPosition="start"
+          loading={result.isLoading}
+          startIcon={<SaveIcon />}
+        >
+          Přidat
+        </LoadingButton>
       </DialogActions>
     </Dialog>
   );

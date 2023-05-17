@@ -75,13 +75,20 @@ export const extendedApiSlice = apiSlice.injectEndpoints({
       providesTags: ["AppReason"],
     }),
     addAppReason: builder.mutation({
-      query: ({ resource }) => ({
-        url: "/ActivityDefinition",
+      query: (bundle) => ({
+        url: "/",
         method: "POST",
-        body: resource,
+        body: bundle,
       }),
-      transformResponse: (responseData) => {
-        transformResource(responseData);
+      transformResponse: (response, meta, arg) => {
+        if (
+          response.entry &&
+          response.entry[0] &&
+          response.entry[0].response &&
+          response.entry[0].response.status
+        )
+          return response.entry[0].response.status;
+        else return "";
       },
       invalidatesTags: ["AppReason"],
     }),

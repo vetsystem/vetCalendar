@@ -17,6 +17,9 @@ export default function AppReasonInput({ onChange }) {
   const initValue = {
     id: null,
     label: "",
+    room: [],
+    doctor: [],
+    duration: 0,
   };
 
   const [value, setValue] = React.useState(initValue);
@@ -62,9 +65,9 @@ export default function AppReasonInput({ onChange }) {
         onChange={(event, newValue) => {
           // Adding new option with appointment reason
           if (typeof newValue === "string") {
-            setValue({ id: null, label: newValue.inputValue });
+            setValue({ ...value, id: null, label: newValue.inputValue });
           } else if (newValue && newValue.inputValue) {
-            setValue({ id: null, label: newValue.inputValue });
+            setValue({ ...value, id: null, label: newValue.inputValue });
             handleOpen();
           }
           // selecting appointment reason from selection
@@ -119,6 +122,7 @@ export default function AppReasonInput({ onChange }) {
       />
       <AppReasonDialog
         newAppReason={value.label}
+        onAppReasonSave={setValue}
         open={open}
         handleClose={() => {
           toggleOpen(false);

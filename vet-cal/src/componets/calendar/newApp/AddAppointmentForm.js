@@ -112,7 +112,6 @@ export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
           url: `${searchUrl.pathname}${searchUrl.search}`,
         };
         bundleEntries.push(transactionResource);
-        console.log(patient);
       }
       if (slots.length > 0) {
         const transactionSlots = slots.map((slot) => ({
@@ -146,7 +145,6 @@ export default function AddAppointmentForm({ onClose, timeSlot, calendarRef }) {
         resourceType: "Bundle",
         entries: bundleEntries,
       });
-      console.log(bundleTransaction);
       await addApp(bundleTransaction)
         .then(({ data }) => {
           return data.entry.filter(

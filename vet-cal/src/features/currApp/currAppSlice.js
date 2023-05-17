@@ -39,9 +39,6 @@ const currAppSlice = createSlice({
           addMinutes(parseISO(action.payload), state.duration)
         );
       else state.endDate = null;
-      console.log(state.startDate);
-      console.log(state.endDate);
-      console.log(state.duration);
     },
     addDuration: (state, action) => {
       state.duration = action.payload;
@@ -49,7 +46,6 @@ const currAppSlice = createSlice({
         state.endDate = formatISO(
           addMinutes(parseISO(state.startDate), state.duration)
         );
-      console.log(state.duration);
     },
     addTimeSlot: (state, action) => {
       const timeSlot = action.payload;
