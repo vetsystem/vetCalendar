@@ -9,23 +9,11 @@ import CloseIcon from "@mui/icons-material/Close";
 import Alert from "@mui/material/Alert";
 import Snackbar from "@mui/material/Snackbar";
 import SaveIcon from "@mui/icons-material/Save";
-import MoreHorizIcon from "@mui/icons-material/MoreHoriz";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormControl from "@mui/material/FormControl";
-import FormLabel from "@mui/material/FormLabel";
 import LoadingButton from "@mui/lab/LoadingButton/LoadingButton";
-import {
-  DatePicker,
-  DateTimePicker,
-  LocalizationProvider,
-  TimePicker,
-} from "@mui/x-date-pickers";
+import { DateTimePicker, LocalizationProvider } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
 import cs from "date-fns/locale/cs";
-import addDays from "date-fns/addDays";
 import addMinutes from "date-fns/addMinutes";
 import format from "date-fns/format";
 import isBefore from "date-fns/isBefore";
@@ -34,7 +22,6 @@ import { v4 as uuidv4 } from "uuid";
 
 import DoctorInput from "../doctors/DoctorInput";
 import RoomInput from "../rooms/RoomInput";
-import ShiftRepeatDialog from "../../componets/shifts/ShiftRepeatDialog";
 import { createBundle, createBundleEntry } from "../../utils/fhir/fhirUtil";
 
 import { useAddShiftMutation } from "./shiftSlice";
@@ -61,16 +48,8 @@ export default function AddShiftForm({ open, anchorEl, onClose }) {
   const { height } = useSelector((state) => state.window);
   // Mutation with trigger function and result for adding shift to FHIR server
   const [addShift, result] = useAddShiftMutation();
-  // Default end date for repeating interval is 4 weeks
-  const defEndRepDay = addDays(new Date(), 28);
   // Setting React state for shift object
   const [shift, setShift] = React.useState(initValue);
-  // Setting state for variable if dialog with shift repeate more information is opened
-  const [openReapeatDialog, toggleOpenRepeatDialog] = React.useState(false);
-  // Repeating shift - not implemented yet
-  const handleOpenRepeatDialog = () => {
-    toggleOpenRepeatDialog(!openReapeatDialog);
-  };
   // Popper for warning messages
   const [openAlert, toggleOpenAlert] = React.useState(false);
   const [alertMessage, setAlertMessage] = React.useState("");
@@ -148,17 +127,6 @@ export default function AddShiftForm({ open, anchorEl, onClose }) {
     return (newValue) => {
       setShift({ ...shift, [dateTimeType]: newValue });
     };
-  };
-  // Repeat shift - not implemented yet
-  const setShiftRepeat = (event) => {
-    const intVal = parseInt(event.target.value);
-    intVal === 0
-      ? setShift({ ...shift, repeat: false, dayInterval: intVal })
-      : setShift({ ...shift, repeat: true, dayInterval: intVal });
-  };
-  // Repeat shift - not implemented yet
-  const setRepEndDate = (date) => {
-    setShift({ ...shift, endRepDay: date });
   };
   /**
    * Function to generate bundle for creating schedule with it's slots. It check
@@ -391,28 +359,6 @@ export default function AddShiftForm({ open, anchorEl, onClose }) {
             slotProps={{ textField: { variant: "standard" } }}
           ></DateTimePicker>
         </LocalizationProvider>
-        {/* <FormControl>
-          <Stack direction="row" justifyContent="space-between">
-            <FormLabel id="radio-buttons-group-label">Opakování</FormLabel>
-            <IconButton onClick={handleOpenRepeatDialog}>
-              <MoreHorizIcon />
-            </IconButton>
-            <ShiftRepeatDialog
-              open={openReapeatDialog}
-              handleClose={() => {
-                toggleOpenRepeatDialog(false);
-              }}
-              changeEndDate={setRepEndDate}
-              defVal={defEndRepDay}
-            />
-          </Stack>
-          <RadioGroup row name="radio-buttons-group" onChange={setShiftRepeat}>
-            <FormControlLabel value={7} control={<Radio />} label="týdně" />
-            <FormControlLabel value={14} control={<Radio />} label="14 dní" />
-            <FormControlLabel value={21} control={<Radio />} label="3 týdny" />
-            <FormControlLabel value={0} control={<Radio />} label="nikdy" />
-          </RadioGroup>
-        </FormControl> */}
         <Stack direction="row" justifyContent="end" spacing={1}>
           <Button onClick={handleClose} disabled={result.isLoading}>
             Zavřít

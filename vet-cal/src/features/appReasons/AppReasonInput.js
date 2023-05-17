@@ -75,12 +75,10 @@ export default function AppReasonInput({ onChange }) {
             // clear input
             if (newValue === null) {
               setValue(initValue);
-              // dispatch(resetCurrAppReason());
             }
             // some selected option
             else {
               setValue(newValue);
-              // dispatch(addCurrAppReason(appReasonsEnts[newValue.id]));
             }
           }
         }}
