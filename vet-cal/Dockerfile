@@ -9,6 +9,7 @@ RUN npm ci
 COPY public/ public
 COPY src/ src
 COPY .env .env
+COPY .env.production .env.production
 
 RUN npm run build
 FROM nginx:alpine AS server

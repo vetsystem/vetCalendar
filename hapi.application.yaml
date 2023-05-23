@@ -1,0 +1,3 @@
+hapi:
+  fhir:
+    fhir_version: R5

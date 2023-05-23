@@ -1,25 +1,28 @@
 version: "3.8"
 services:
   test-data:
+    image: vetcal.azurecr.io/vetcal-test-data
     build: ./testData
-    container_name: test-data
+    container_name: vetcal-test-data
     depends_on:
       - hapi
   hapi:
     image: hapiproject/hapi:latest
     ports:
       - "8080:8080"
-    environment:
-      hapi.fhir.fhir_version: R5
-      tester.home.fhir_version: R5
-      tester.global.fhir_version: R5
-      tester.global.server_address: "http://hapi.fhir.org/baseR5"
     container_name: hapi
+    configs:
+      - source: hapi
+        target: /app/config/application.yaml
   vetcal:
+    image: vetcal.azurecr.io/vetcal-fe
     build: ./vet-cal
     ports:
-      - "3000:80"
-    container_name: vet-cal
+      - "80:80"
+    container_name: vetcal-fe
     depends_on:
       - hapi
       - test-data
+configs:
+  hapi:
+    file: ./hapi.application.yaml

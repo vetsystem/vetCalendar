@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const apiSlice = createApi({
   reducerPath: "fhirApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: process.env.REACT_APP_FHIR_LOCAL_SERVER_URL,
+    baseUrl: process.env.REACT_APP_FHIR_SERVER_URL,
   }),
   endpoints: (builder) => ({
     /* getRooms: builder.query({
