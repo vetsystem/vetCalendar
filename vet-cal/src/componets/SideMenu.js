@@ -1,3 +1,5 @@
+import { useSelector, useDispatch } from "react-redux";
+
 import Drawer from "@mui/material/Drawer";
 import TextField from "@mui/material/TextField";
 import {
@@ -12,10 +14,14 @@ import ListItemText from "@mui/material/ListItemText";
 import ListItem from "@mui/material/ListItem";
 import SearchIcon from "@mui/icons-material/Search";
 import { Link } from "react-router-dom";
+import { logout } from "../features/user/userSlice";
 
 const DrawerWidth = 256;
 
 function SideMenu() {
+  const dispatch = useDispatch();
+  const user = useSelector((state) => state.user);
+
   return (
     <Drawer
       sx={{
@@ -31,14 +37,14 @@ function SideMenu() {
     >
       <List dense={true}>
         <ListItem>
-          <Avatar>OP</Avatar>
+          <Avatar sx={{ bgcolor: user.color }}>{user.initials}</Avatar>
         </ListItem>
         <ListItem>
           <Typography variant="hSideMenu" color="initial">
-            MVDr. Otakar Procházka
+            {user.name}
           </Typography>
         </ListItem>
-        <ListItem>
+        {/* <ListItem>
           <TextField
             id="search-field"
             variant="standard"
@@ -54,7 +60,7 @@ function SideMenu() {
               ),
             }}
           ></TextField>
-        </ListItem>
+        </ListItem> */}
 
         {[
           { label: "Kalendář", link: "/" },
@@ -70,6 +76,15 @@ function SideMenu() {
             />
           </ListItemButton>
         ))}
+        <ListItemButton key="logout" onClick={() => dispatch(logout())}>
+          <ListItemText
+            primary="Odhlásit"
+            primaryTypographyProps={{
+              fontFamily: '"Red Hat Text", "Roboto", "sans-serif"',
+              fontSize: 18,
+            }}
+          />
+        </ListItemButton>
       </List>
     </Drawer>
   );

@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Routes, Route } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 import CssBaseline from "@mui/material/CssBaseline";
 import { ThemeProvider } from "@mui/material/styles";
@@ -12,6 +13,7 @@ import Shifts from "./componets/shifts/Shifts";
 import { setHeight } from "./features/window/windowSlice";
 import { useWindowResize } from "./utils/useWindowResize";
 import { useDispatch } from "react-redux";
+import Login from "./features/user/Login";
 
 // TODO load shifts data
 
@@ -28,18 +30,25 @@ function App() {
     date: `gt${shiftStartInterval}`,
     _count: 1000,
   }); */
+  const user = useSelector((state) => state.user);
 
   return (
     <>
       <CssBaseline />
       <ThemeProvider theme={customTheme}>
-        <Box sx={{ display: "flex" }}>
-          <SideMenu />
-          <Routes>
-            <Route path="/" element={<Calendar />}></Route>
-            <Route path="/shifts" element={<Shifts />}></Route>
-          </Routes>
-        </Box>
+        {user.id ? (
+          <>
+            <Box sx={{ display: "flex" }}>
+              <SideMenu />
+              <Routes>
+                <Route path="/" element={<Calendar />}></Route>
+                <Route path="/shifts" element={<Shifts />}></Route>
+              </Routes>
+            </Box>
+          </>
+        ) : (
+          <Login />
+        )}
       </ThemeProvider>
     </>
   );

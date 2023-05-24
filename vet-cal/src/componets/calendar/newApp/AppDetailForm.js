@@ -4,7 +4,7 @@ import React, {
   useImperativeHandle,
   useState,
 } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 
 import addDays from "date-fns/addDays";
 
@@ -29,6 +29,7 @@ import { useGetDoctorsQuery } from "../../../features/doctors/doctorsSlice";
 import { changeSelectedDate } from "../../../features/calendar/calendarSlice";
 
 const AppDetailForm = forwardRef(({ calendarRef, selectedSlot }, ref) => {
+  const user = useSelector((state) => state.user);
   const { data: doctorData } = useGetDoctorsQuery();
   const doctors = doctorData.entities;
   const { data: roomData } = useGetRoomsQuery();
@@ -44,9 +45,9 @@ const AppDetailForm = forwardRef(({ calendarRef, selectedSlot }, ref) => {
     room: { id: "", type: "room", name: "" },
     roomSelection: [],
     doctor: {
-      id: "",
+      id: user.id,
       type: "doctor",
-      name: "",
+      name: user.name,
     },
     doctorSelection: [],
   };
